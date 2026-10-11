@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UpWatch – Test conexiune DB</title>
+  <style>
+    body { font-family: "Segoe UI", Arial, sans-serif; margin: 0; padding: 24px; background: #f5f6f8; color: #1d2330; }
+    main { max-width: 1100px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    h2 { margin: 28px 0 10px; font-size: 18px; }
+    .muted { color: #667085; }
+    .card { background: #fff; border: 1px solid #e3e6eb; border-radius: 8px; padding: 16px 20px; }
+    .ok { display: inline-block; background: #e7f6ec; color: #1a7f37; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 12px 0 0; }
+    dt { color: #667085; }
+    dd { margin: 0; font-family: Consolas, monospace; }
+    .table-wrap { overflow-x: auto; background: #fff; border: 1px solid #e3e6eb; border-radius: 8px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eef0f3; white-space: nowrap; }
+    th { background: #f9fafb; font-weight: 600; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .up { background: #e7f6ec; color: #1a7f37; }
+    .down { background: #fdecec; color: #c62828; }
+    .paused, .pending { background: #eef0f3; color: #475467; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>UpWatch – test conexiune la baza de date</h1>
+  <p class="muted">Pagină de test pentru laborator: datele de mai jos sunt citite din PostgreSQL prin ORM-ul Django.</p>
+
+  <div class="card">
+    <span class="ok">Conexiune reușită</span>
+    <dl>
+      <dt>SGBD</dt><dd>{{ db.version }}</dd>
+      <dt>Server</dt><dd>{{ db.host }}:{{ db.port }}</dd>
+      <dt>Bază de date</dt><dd>{{ db.database }}</dd>
+      <dt>Utilizator</dt><dd>{{ db.user }}</dd>
+    </dl>
+  </div>
+
+  <h2>Tabel <code>billing_plan</code> ({{ plans|length }} înregistrări)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Cod</th><th>Nume</th><th>Preț lunar</th><th>Preț anual</th>
+          <th>Max. monitoare</th><th>Interval minim</th><th>Pagini status</th><th>Retenție</th><th>Funcționalități</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for plan in plans %}
+        <tr>
+          <td class="num">{{ plan.id }}</td>
+          <td>{{ plan.code }}</td>
+          <td>{{ plan.name }}</td>
+          <td class="num">{{ plan.price_monthly }} {{ plan.currency }}</td>
+          <td class="num">{{ plan.price_yearly }} {{ plan.currency }}</td>
+          <td class="num">{{ plan.max_monitors }}</td>
+          <td class="num">{{ plan.min_check_interval_sec }} s</td>
+          <td class="num">{{ plan.max_status_pages }}</td>
+          <td class="num">{{ plan.log_retention_days }} zile</td>
+          <td>{% for f in plan.features.all %}{{ f.code }}{% if not forloop.last %}, {% endif %}{% empty %}–{% endfor %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10">Nu există planuri. Rulează <code>python manage.py seed</code>.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Tabel <code>monitoring_monitor</code> ({{ monitors|length }} înregistrări)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Utilizator</th><th>Nume</th><th>Tip</th><th>URL</th>
+          <th>Interval</th><th>Status</th><th>Incidente</th><th>Ultima verificare</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in monitors %}
+        <tr>
+          <td class="num">{{ m.id }}</td>
+          <td>{{ m.user.email }}</td>
+          <td>{{ m.name }}</td>
+          <td>{{ m.get_monitor_type_display }}</td>
+          <td>{{ m.url }}</td>
+          <td class="num">{{ m.interval_sec }} s</td>
+          <td><span class="badge {{ m.status }}">{{ m.get_status_display }}</span></td>
+          <td class="num">{{ m.incident_count }}</td>
+          <td>{{ m.last_checked_at|date:"d.m.Y H:i"|default:"–" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9">Nu există monitoare. Rulează <code>python manage.py seed</code>.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>
