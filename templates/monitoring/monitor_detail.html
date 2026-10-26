@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ monitor.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">{{ monitor.name }} {% include "monitoring/_status_badge.html" %}</h1>
+  <div>
+    <a class="btn btn-primary" href="{% url 'monitoring:monitor_update' monitor.pk %}">Editează</a>
+    <a class="btn btn-outline-secondary" href="{% url 'monitoring:monitor_list' %}">Înapoi la listă</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">URL</dt>
+      <dd class="col-sm-9"><a href="{{ monitor.url }}" target="_blank" rel="noopener">{{ monitor.url }}</a></dd>
+
+      <dt class="col-sm-3">Tip monitor</dt>
+      <dd class="col-sm-9">{{ monitor.get_monitor_type_display }}</dd>
+
+      <dt class="col-sm-3">Keyword</dt>
+      <dd class="col-sm-9">{{ monitor.keyword|default:"—" }}</dd>
+
+      <dt class="col-sm-3">Metodă HTTP</dt>
+      <dd class="col-sm-9">{{ monitor.get_http_method_display }}</dd>
+
+      <dt class="col-sm-3">Cod de status așteptat</dt>
+      <dd class="col-sm-9">{{ monitor.expected_status_code }}</dd>
+
+      <dt class="col-sm-3">Interval / timeout</dt>
+      <dd class="col-sm-9">{{ monitor.interval_sec }}s / {{ monitor.timeout_sec }}s</dd>
+
+      <dt class="col-sm-3">Activ</dt>
+      <dd class="col-sm-9">{% if monitor.is_active %}Da{% else %}Nu{% endif %}</dd>
+
+      <dt class="col-sm-3">Proprietar</dt>
+      <dd class="col-sm-9">{{ monitor.user.email }}</dd>
+
+      <dt class="col-sm-3">Incidente</dt>
+      <dd class="col-sm-9">{{ monitor.incident_count }}</dd>
+
+      <dt class="col-sm-3">Ultima verificare</dt>
+      <dd class="col-sm-9">{{ monitor.last_checked_at|default:"—" }}</dd>
+
+      <dt class="col-sm-3">Creat / actualizat</dt>
+      <dd class="col-sm-9">{{ monitor.created_at }} / {{ monitor.updated_at }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}
