@@ -1,0 +1,50 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}{{ plan.name }}{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">
+    {{ plan.name }}
+    {% if plan.is_active %}<span class="badge text-bg-success">Activ</span>{% else %}<span class="badge text-bg-secondary">Inactiv</span>{% endif %}
+  </h1>
+  <div>
+    <a class="btn btn-primary" href="{% url 'backoffice:plan_update' plan.pk %}">Editează</a>
+    <a class="btn btn-outline-secondary" href="{% url 'backoffice:plan_list' %}">Înapoi la listă</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Prețuri și limite</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-6">Cod</dt><dd class="col-sm-6">{{ plan.code }}</dd>
+          <dt class="col-sm-6">Descriere</dt><dd class="col-sm-6">{{ plan.description|default:"—" }}</dd>
+          <dt class="col-sm-6">Preț lunar / anual</dt><dd class="col-sm-6">{{ plan.price_monthly }} / {{ plan.price_yearly }} {{ plan.currency }}</dd>
+          <dt class="col-sm-6">Monitoare maxime</dt><dd class="col-sm-6">{{ plan.max_monitors }}</dd>
+          <dt class="col-sm-6">Interval minim de verificare</dt><dd class="col-sm-6">{{ plan.min_check_interval_sec }}s</dd>
+          <dt class="col-sm-6">Pagini de status maxime</dt><dd class="col-sm-6">{{ plan.max_status_pages }}</dd>
+          <dt class="col-sm-6">Canale de alertă maxime</dt><dd class="col-sm-6">{{ plan.max_alert_channels }}</dd>
+          <dt class="col-sm-6">Retenția istoricului</dt><dd class="col-sm-6">{{ plan.log_retention_days }} zile</dd>
+          <dt class="col-sm-6">Ordine de afișare</dt><dd class="col-sm-6">{{ plan.sort_order }}</dd>
+          <dt class="col-sm-6">Abonamente active</dt><dd class="col-sm-6">{{ plan.active_subscription_count }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Feature-uri incluse</div>
+      <ul class="list-group list-group-flush">
+        {% for feature in plan.features.all %}
+          <li class="list-group-item">{{ feature.name }} <span class="text-muted small">{{ feature.code }}</span></li>
+        {% empty %}
+          <li class="list-group-item text-muted">Niciun feature.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

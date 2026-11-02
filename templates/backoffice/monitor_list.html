@@ -1,0 +1,66 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Monitoare{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Monitoare</h1>
+  <a class="btn btn-primary" href="{% url 'backoffice:monitor_create' %}">+ Adaugă monitor</a>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <ul class="nav nav-pills">
+    {% for value, label, count in filters %}
+      <li class="nav-item">
+        <a class="nav-link{% if value == current_status %} active{% endif %}"
+           href="{% url 'backoffice:monitor_list' %}?{% if value %}status={{ value }}&{% endif %}q={{ search|urlencode }}">
+          {{ label }} <span class="badge {% if value == current_status %}text-bg-light{% else %}text-bg-secondary{% endif %}">{{ count }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  <form class="d-flex gap-2" method="get">
+    {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+    <input type="search" name="q" value="{{ search }}" class="form-control" placeholder="Nume, URL sau email">
+    <button type="submit" class="btn btn-outline-primary">Caută</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nume</th>
+          <th>URL</th>
+          <th>Tip</th>
+          <th class="text-end">Interval</th>
+          <th>Status</th>
+          <th>Proprietar</th>
+          <th class="text-end">Incidente</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for monitor in monitors %}
+          <tr>
+            <td class="fw-semibold">{{ monitor.name }}</td>
+            <td class="text-truncate" style="max-width: 240px"><a href="{{ monitor.url }}" target="_blank" rel="noopener">{{ monitor.url }}</a></td>
+            <td>{{ monitor.get_monitor_type_display }}</td>
+            <td class="text-end">{{ monitor.interval_sec }}s</td>
+            <td>{% include "backoffice/_monitor_status.html" %}</td>
+            <td><a href="{% url 'backoffice:client_detail' monitor.user_id %}">{{ monitor.user.email }}</a></td>
+            <td class="text-end">{{ monitor.incident_count }}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'backoffice:monitor_detail' monitor.pk %}">Detalii</a>
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'backoffice:monitor_update' monitor.pk %}">Editează</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4">Niciun monitor găsit.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}{{ invoice.number }}{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Factura {{ invoice.number }} {% include "backoffice/_invoice_status.html" %}</h1>
+  <div class="d-flex gap-2">
+    {% if invoice.status != "paid" %}
+      <form method="post" action="{% url 'backoffice:invoice_mark_paid' invoice.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Marchează plătită</button>
+      </form>
+    {% endif %}
+    {% if invoice.status == "pending" %}
+      <form method="post" action="{% url 'backoffice:invoice_mark_failed' invoice.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger">Marchează eșuată</button>
+      </form>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'backoffice:invoice_list' %}">Înapoi la listă</a>
+  </div>
+</div>
+
+<div class="card" style="max-width: 720px">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Client</dt>
+      <dd class="col-sm-8">
+        <a href="{% url 'backoffice:client_detail' invoice.user_id %}">{{ invoice.user.email }}</a>
+        <span class="text-muted">{{ invoice.user.get_full_name }}</span>
+      </dd>
+      <dt class="col-sm-4">Plan</dt>
+      <dd class="col-sm-8">{{ invoice.subscription.plan.name }} ({{ invoice.get_billing_cycle_display|lower }})</dd>
+      <dt class="col-sm-4">Sumă</dt>
+      <dd class="col-sm-8 fw-semibold">{{ invoice.amount }} {{ invoice.currency }}</dd>
+      <dt class="col-sm-4">Perioadă facturată</dt>
+      <dd class="col-sm-8">{{ invoice.period_start|date:"d.m.Y" }} → {{ invoice.period_end|date:"d.m.Y" }}</dd>
+      <dt class="col-sm-4">Card</dt>
+      <dd class="col-sm-8">{% if invoice.card_last4 %}•••• {{ invoice.card_last4 }} <span class="text-muted small">(simulat)</span>{% else %}—{% endif %}</dd>
+      <dt class="col-sm-4">Emisă</dt>
+      <dd class="col-sm-8">{{ invoice.issued_at|date:"d.m.Y H:i" }}</dd>
+      <dt class="col-sm-4">Plătită</dt>
+      <dd class="col-sm-8">{{ invoice.paid_at|date:"d.m.Y H:i"|default:"—" }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Clienți{% endblock %}
+
+{% block backoffice_content %}
+<h1 class="h3 mb-3">Clienți</h1>
+
+<form class="row g-2 align-items-center mb-3" method="get">
+  <div class="col-sm-6 col-lg-5">
+    <input type="search" name="q" value="{{ search }}" class="form-control" placeholder="Caută după email sau nume">
+  </div>
+  <div class="col-auto">
+    <select name="status" class="form-select">
+      <option value="">Toți</option>
+      <option value="active"{% if current_status == "active" %} selected{% endif %}>Activi</option>
+      <option value="inactive"{% if current_status == "inactive" %} selected{% endif %}>Dezactivați</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-outline-primary">Filtrează</button>
+    {% if search or current_status %}<a class="btn btn-link" href="{% url 'backoffice:client_list' %}">Resetează</a>{% endif %}
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Client</th>
+          <th>Plan curent</th>
+          <th class="text-end">Monitoare</th>
+          <th>Înregistrat</th>
+          <th>Ultima autentificare</th>
+          <th>Cont</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for client in clients %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ client.email }}</div>
+              <div class="text-muted small">{{ client.get_full_name|default:"—" }}</div>
+            </td>
+            <td>
+              {% with subscription=client.active_subscriptions|first %}
+                {% if subscription %}{{ subscription.plan.name }} <span class="text-muted small">({{ subscription.get_billing_cycle_display|lower }})</span>{% else %}<span class="text-muted">fără abonament</span>{% endif %}
+              {% endwith %}
+            </td>
+            <td class="text-end">{{ client.monitor_count }}</td>
+            <td class="small">{{ client.date_joined|date:"d.m.Y" }}</td>
+            <td class="small">{{ client.last_login|date:"d.m.Y H:i"|default:"niciodată" }}</td>
+            <td>{% if client.is_active %}<span class="badge text-bg-success">Activ</span>{% else %}<span class="badge text-bg-secondary">Dezactivat</span>{% endif %}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'backoffice:client_detail' client.pk %}">Detalii</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">Niciun client găsit.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

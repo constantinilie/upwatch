@@ -1,0 +1,21 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}{% if plan %}Editează {{ title }}{% else %}Plan nou{% endif %}{% endblock %}
+
+{% block backoffice_content %}
+<h1 class="h3 mb-3">{% if plan %}Editează planul „{{ title }}”{% else %}Adaugă plan{% endif %}</h1>
+
+<div class="card" style="max-width: 900px">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "backoffice/_form_fields.html" %}
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Salvează</button>
+        <a class="btn btn-outline-secondary"
+           href="{% if plan %}{% url 'backoffice:plan_detail' plan.pk %}{% else %}{% url 'backoffice:plan_list' %}{% endif %}">Anulează</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

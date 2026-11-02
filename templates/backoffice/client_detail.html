@@ -1,0 +1,120 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}{{ client.email }}{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">
+    {{ client.email }}
+    {% if client.is_active %}<span class="badge text-bg-success">Activ</span>{% else %}<span class="badge text-bg-secondary">Dezactivat</span>{% endif %}
+  </h1>
+  <div class="d-flex gap-2">
+    <form method="post" action="{% url 'backoffice:client_toggle_active' client.pk %}"
+          onsubmit="return confirm('{% if client.is_active %}Dezactivezi{% else %}Reactivezi{% endif %} contul {{ client.email|escapejs }}?');">
+      {% csrf_token %}
+      {% if client.is_active %}
+        <button type="submit" class="btn btn-outline-danger">Dezactivează contul</button>
+      {% else %}
+        <button type="submit" class="btn btn-outline-success">Reactivează contul</button>
+      {% endif %}
+    </form>
+    <a class="btn btn-outline-secondary" href="{% url 'backoffice:client_list' %}">Înapoi la listă</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Date client</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-5">Nume</dt><dd class="col-sm-7">{{ client.get_full_name|default:"—" }}</dd>
+          <dt class="col-sm-5">Fus orar</dt><dd class="col-sm-7">{{ client.timezone }}</dd>
+          <dt class="col-sm-5">Înregistrat</dt><dd class="col-sm-7">{{ client.date_joined|date:"d.m.Y H:i" }}</dd>
+          <dt class="col-sm-5">Ultima autentificare</dt><dd class="col-sm-7">{{ client.last_login|date:"d.m.Y H:i"|default:"niciodată" }}</dd>
+          <dt class="col-sm-5">Plan curent</dt>
+          <dd class="col-sm-7">
+            {% with subscription=client.active_subscriptions|first %}
+              {% if subscription %}{{ subscription.plan.name }} ({{ subscription.get_billing_cycle_display|lower }}){% else %}fără abonament{% endif %}
+            {% endwith %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Abonamente</span>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'backoffice:subscription_create' %}">+ Abonament</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>Plan</th><th>Ciclu</th><th>Status</th><th>Perioadă</th></tr></thead>
+          <tbody>
+            {% for subscription in subscriptions %}
+              <tr>
+                <td>{{ subscription.plan.name }}</td>
+                <td>{{ subscription.get_billing_cycle_display }}</td>
+                <td>{{ subscription.get_status_display }}</td>
+                <td class="small text-nowrap">
+                  {{ subscription.current_period_start|date:"d.m.Y" }} →
+                  {% if subscription.current_period_end %}{{ subscription.current_period_end|date:"d.m.Y" }}{% else %}fără expirare{% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-muted">Niciun abonament.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Monitoare</div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>Nume</th><th>Tip</th><th>Status</th><th class="text-end">Incidente</th></tr></thead>
+          <tbody>
+            {% for monitor in monitors %}
+              <tr>
+                <td><a href="{% url 'backoffice:monitor_detail' monitor.pk %}">{{ monitor.name }}</a></td>
+                <td>{{ monitor.get_monitor_type_display }}</td>
+                <td>{% include "backoffice/_monitor_status.html" %}</td>
+                <td class="text-end">{{ monitor.incident_count }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-muted">Niciun monitor.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Facturi</div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>Număr</th><th class="text-end">Sumă</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for invoice in invoices %}
+              <tr>
+                <td class="small"><a href="{% url 'backoffice:invoice_detail' invoice.pk %}">{{ invoice.number }}</a><div class="text-muted">{{ invoice.issued_at|date:"d.m.Y" }}</div></td>
+                <td class="text-end">{{ invoice.amount }} {{ invoice.currency }}</td>
+                <td>{{ invoice.get_status_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3" class="text-muted">Nicio factură.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

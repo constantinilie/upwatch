@@ -1,0 +1,46 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Back office{% endblock %}
+
+{% block backoffice_content %}
+<h1 class="h3 mb-3">Dashboard</h1>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
+  <div class="col">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small"><a class="stretched-link text-reset text-decoration-none" href="{% url 'backoffice:client_list' %}">Clienți</a></div>
+      <div class="fs-2 fw-semibold">{{ stats.clients }}</div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small"><a class="stretched-link text-reset text-decoration-none" href="{% url 'backoffice:subscription_list' %}?status=active">Abonamente active</a></div>
+      <div class="fs-2 fw-semibold">{{ stats.active_subscriptions }}</div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small"><a class="stretched-link text-reset text-decoration-none" href="{% url 'backoffice:subscription_list' %}?status=active">Venit lunar recurent (MRR)</a></div>
+      <div class="fs-2 fw-semibold">{{ stats.mrr }} EUR</div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small"><a class="stretched-link text-reset text-decoration-none" href="{% url 'backoffice:monitor_list' %}">Monitoare</a></div>
+      <div class="fs-2 fw-semibold">{{ stats.monitors }}</div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="card h-100{% if stats.monitors_down %} border-danger{% endif %}"><div class="card-body">
+      <div class="text-muted small"><a class="stretched-link text-reset text-decoration-none" href="{% url 'backoffice:monitor_list' %}?status=down">Monitoare down</a></div>
+      <div class="fs-2 fw-semibold{% if stats.monitors_down %} text-danger{% endif %}">{{ stats.monitors_down }}</div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="card h-100{% if stats.ongoing_incidents %} border-warning{% endif %}"><div class="card-body">
+      <div class="text-muted small"><a class="stretched-link text-reset text-decoration-none" href="{% url 'backoffice:incident_list' %}?status=ongoing">Incidente în desfășurare</a></div>
+      <div class="fs-2 fw-semibold">{{ stats.ongoing_incidents }}</div>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

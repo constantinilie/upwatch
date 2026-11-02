@@ -1,0 +1,69 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}{{ monitor.name }}{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ monitor.name }} {% include "backoffice/_monitor_status.html" %}</h1>
+  <div class="d-flex gap-2">
+    <form method="post" action="{% url 'backoffice:monitor_toggle_active' monitor.pk %}">
+      {% csrf_token %}
+      {% if monitor.is_active %}
+        <button type="submit" class="btn btn-outline-warning">Pune pe pauză</button>
+      {% else %}
+        <button type="submit" class="btn btn-outline-success">Reactivează</button>
+      {% endif %}
+    </form>
+    <a class="btn btn-primary" href="{% url 'backoffice:monitor_update' monitor.pk %}">Editează</a>
+    <a class="btn btn-outline-secondary" href="{% url 'backoffice:monitor_list' %}">Înapoi la listă</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Configurare</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-5">URL</dt>
+          <dd class="col-sm-7 text-break"><a href="{{ monitor.url }}" target="_blank" rel="noopener">{{ monitor.url }}</a></dd>
+          <dt class="col-sm-5">Tip monitor</dt><dd class="col-sm-7">{{ monitor.get_monitor_type_display }}</dd>
+          <dt class="col-sm-5">Keyword</dt><dd class="col-sm-7">{{ monitor.keyword|default:"—" }}</dd>
+          <dt class="col-sm-5">Metodă HTTP</dt><dd class="col-sm-7">{{ monitor.get_http_method_display }}</dd>
+          <dt class="col-sm-5">Cod așteptat</dt><dd class="col-sm-7">{{ monitor.expected_status_code }}</dd>
+          <dt class="col-sm-5">Interval / timeout</dt><dd class="col-sm-7">{{ monitor.interval_sec }}s / {{ monitor.timeout_sec }}s</dd>
+          <dt class="col-sm-5">Activ</dt><dd class="col-sm-7">{% if monitor.is_active %}Da{% else %}Nu{% endif %}</dd>
+          <dt class="col-sm-5">Proprietar</dt>
+          <dd class="col-sm-7"><a href="{% url 'backoffice:client_detail' monitor.user_id %}">{{ monitor.user.email }}</a></dd>
+          <dt class="col-sm-5">Ultima verificare</dt><dd class="col-sm-7">{{ monitor.last_checked_at|date:"d.m.Y H:i"|default:"—" }}</dd>
+          <dt class="col-sm-5">Creat / actualizat</dt>
+          <dd class="col-sm-7">{{ monitor.created_at|date:"d.m.Y H:i" }} / {{ monitor.updated_at|date:"d.m.Y H:i" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Incidente ({{ monitor.incident_count }})</div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>Început</th><th>Durată</th><th>Cauză</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for incident in incidents %}
+              <tr>
+                <td class="small text-nowrap">{{ incident.started_at|date:"d.m.Y H:i" }}</td>
+                <td class="small">{% if incident.duration_sec %}{{ incident.duration_sec|floatformat:0 }}s{% else %}—{% endif %}</td>
+                <td class="small">{{ incident.cause|default:"—" }}</td>
+                <td>{% if incident.status == "ongoing" %}<span class="badge text-bg-danger">În desfășurare</span>{% else %}<span class="badge text-bg-success">Rezolvat</span>{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-muted">Niciun incident.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
