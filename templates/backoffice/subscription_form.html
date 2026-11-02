@@ -1,0 +1,20 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Abonament nou{% endblock %}
+
+{% block backoffice_content %}
+<h1 class="h3 mb-3">Abonează un client</h1>
+
+<div class="card" style="max-width: 900px">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "backoffice/_form_fields.html" %}
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Salvează</button>
+        <a class="btn btn-outline-secondary" href="{% url 'backoffice:subscription_list' %}">Anulează</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

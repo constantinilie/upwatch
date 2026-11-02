@@ -9,11 +9,14 @@
 <body class="bg-light">
 <nav class="navbar navbar-expand navbar-dark bg-dark mb-4">
   <div class="container">
-    <a class="navbar-brand fw-semibold" href="{% url 'monitoring:monitor_list' %}">UpWatch</a>
-    <ul class="navbar-nav">
-      <li class="nav-item"><a class="nav-link" href="{% url 'monitoring:monitor_list' %}">Monitoare</a></li>
-      <li class="nav-item"><a class="nav-link" href="{% url 'test_db' %}">Test DB</a></li>
-    </ul>
+    <a class="navbar-brand fw-semibold" href="{% url 'backoffice:dashboard' %}">UpWatch</a>
+    {% if user.is_authenticated %}
+      <form class="d-flex align-items-center gap-2 ms-auto" method="post" action="{% url 'admin:logout' %}">
+        {% csrf_token %}
+        <span class="navbar-text small">{{ user.email }}</span>
+        <button type="submit" class="btn btn-sm btn-outline-light">Ieșire</button>
+      </form>
+    {% endif %}
   </div>
 </nav>
 

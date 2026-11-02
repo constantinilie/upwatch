@@ -1,0 +1,3 @@
+{% if invoice.status == "paid" %}<span class="badge text-bg-success">Plătită</span>
+{% elif invoice.status == "failed" %}<span class="badge text-bg-danger">Eșuată</span>
+{% else %}<span class="badge text-bg-warning">În așteptare</span>{% endif %}

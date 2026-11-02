@@ -1,0 +1,42 @@
+{# Câmpurile unui formular Bootstrap, pe 2 coloane; textarea și bifele ocupă tot rândul. #}
+{% for error in form.non_field_errors %}
+  <div class="alert alert-danger">{{ error }}</div>
+{% endfor %}
+
+<div class="row g-3">
+  {% for field in form %}
+    {% if field.widget_type == "checkbox" %}
+      <div class="col-12">
+        <div class="form-check">
+          {{ field }}
+          <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        </div>
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+    {% elif field.widget_type == "checkboxselectmultiple" %}
+      <div class="col-12">
+        <div class="form-label">{{ field.label }}</div>
+        <div class="row row-cols-1 row-cols-sm-2 g-1">
+          {% for option in field %}
+            <div class="col">
+              <div class="form-check">
+                {{ option.tag }}
+                <label class="form-check-label" for="{{ option.id_for_label }}">{{ option.choice_label }}</label>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col text-muted small">Nu există opțiuni.</div>
+          {% endfor %}
+        </div>
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+    {% else %}
+      <div class="{% if field.widget_type == 'textarea' %}col-12{% else %}col-md-6{% endif %}">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>

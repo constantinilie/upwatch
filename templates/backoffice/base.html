@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% with current=request.resolver_match.url_name %}
+<div class="row g-4">
+  <aside class="col-md-3 col-lg-2">
+    <div class="list-group">
+      <a href="{% url 'backoffice:dashboard' %}"
+         class="list-group-item list-group-item-action{% if current == 'dashboard' %} active{% endif %}">Dashboard</a>
+      <div class="list-group-item small text-uppercase text-muted fw-semibold">Catalog</div>
+      <a href="{% url 'backoffice:plan_list' %}"
+         class="list-group-item list-group-item-action{% if current|slice:':5' == 'plan_' %} active{% endif %}">Planuri</a>
+      <a href="{% url 'backoffice:feature_list' %}"
+         class="list-group-item list-group-item-action{% if current|slice:':8' == 'feature_' %} active{% endif %}">Feature-uri</a>
+      <div class="list-group-item small text-uppercase text-muted fw-semibold">Clienți și facturare</div>
+      <a href="{% url 'backoffice:client_list' %}"
+         class="list-group-item list-group-item-action{% if current|slice:':7' == 'client_' %} active{% endif %}">Clienți</a>
+      <a href="{% url 'backoffice:subscription_list' %}"
+         class="list-group-item list-group-item-action{% if current|slice:':13' == 'subscription_' %} active{% endif %}">Abonamente</a>
+      <a href="{% url 'backoffice:invoice_list' %}"
+         class="list-group-item list-group-item-action{% if current|slice:':8' == 'invoice_' %} active{% endif %}">Facturi</a>
+      <div class="list-group-item small text-uppercase text-muted fw-semibold">Supraveghere</div>
+      <a href="{% url 'backoffice:monitor_list' %}"
+         class="list-group-item list-group-item-action{% if current|slice:':8' == 'monitor_' %} active{% endif %}">Monitoare</a>
+      <a href="{% url 'backoffice:incident_list' %}"
+         class="list-group-item list-group-item-action{% if current == 'incident_list' %} active{% endif %}">Incidente</a>
+      <a href="{% url 'backoffice:status_page_list' %}"
+         class="list-group-item list-group-item-action{% if current|slice:':12' == 'status_page_' %} active{% endif %}">Pagini de status</a>
+      <a href="{% url 'backoffice:audit_list' %}"
+         class="list-group-item list-group-item-action{% if current == 'audit_list' %} active{% endif %}">Audit</a>
+    </div>
+  </aside>
+
+  <section class="col-md-9 col-lg-10">
+    {% block backoffice_content %}{% endblock %}
+  </section>
+</div>
+{% endwith %}
+{% endblock %}

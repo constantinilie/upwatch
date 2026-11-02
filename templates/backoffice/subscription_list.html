@@ -1,0 +1,76 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Abonamente{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Abonamente</h1>
+  <a class="btn btn-primary" href="{% url 'backoffice:subscription_create' %}">+ Abonează un client</a>
+</div>
+
+<ul class="nav nav-pills mb-3">
+  {% for value, label, count in filters %}
+    <li class="nav-item">
+      <a class="nav-link{% if value == current_status %} active{% endif %}"
+         href="{% url 'backoffice:subscription_list' %}{% if value %}?status={{ value }}{% endif %}">
+        {{ label }} <span class="badge {% if value == current_status %}text-bg-light{% else %}text-bg-secondary{% endif %}">{{ count }}</span>
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Client</th>
+          <th>Plan</th>
+          <th class="text-end">Preț</th>
+          <th>Ciclu</th>
+          <th>Status</th>
+          <th>Perioadă</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for subscription in subscriptions %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ subscription.user.email }}</div>
+              <div class="text-muted small">{{ subscription.user.get_full_name|default:"—" }}</div>
+            </td>
+            <td>{{ subscription.plan.name }}</td>
+            <td class="text-end text-nowrap">
+              {% if subscription.billing_cycle == "yearly" %}{{ subscription.plan.price_yearly }}{% else %}{{ subscription.plan.price_monthly }}{% endif %}
+              {{ subscription.plan.currency }}
+            </td>
+            <td>{{ subscription.get_billing_cycle_display }}</td>
+            <td>
+              {% if subscription.status == "active" %}<span class="badge text-bg-success">Activ</span>
+              {% elif subscription.status == "canceled" %}<span class="badge text-bg-secondary">Anulat</span>
+              {% else %}<span class="badge text-bg-warning">Expirat</span>{% endif %}
+            </td>
+            <td class="text-nowrap small">
+              {{ subscription.current_period_start|date:"d.m.Y" }} →
+              {% if subscription.current_period_end %}{{ subscription.current_period_end|date:"d.m.Y" }}{% else %}fără expirare{% endif %}
+              {% if subscription.canceled_at %}<div class="text-muted">anulat la {{ subscription.canceled_at|date:"d.m.Y" }}</div>{% endif %}
+            </td>
+            <td class="text-end">
+              {% if subscription.status == "active" %}
+                <form method="post" action="{% url 'backoffice:subscription_cancel' subscription.pk %}"
+                      onsubmit="return confirm('Anulezi abonamentul lui {{ subscription.user.email|escapejs }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Anulează</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">Nu există abonamente.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

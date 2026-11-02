@@ -1,0 +1,62 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Facturi{% endblock %}
+
+{% block backoffice_content %}
+<h1 class="h3 mb-3">Facturi</h1>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <ul class="nav nav-pills">
+    {% for value, label, count in filters %}
+      <li class="nav-item">
+        <a class="nav-link{% if value == current_status %} active{% endif %}"
+           href="{% url 'backoffice:invoice_list' %}?{% if value %}status={{ value }}&{% endif %}q={{ search|urlencode }}">
+          {{ label }} <span class="badge {% if value == current_status %}text-bg-light{% else %}text-bg-secondary{% endif %}">{{ count }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  <form class="d-flex gap-2" method="get">
+    {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+    <input type="search" name="q" value="{{ search }}" class="form-control" placeholder="Număr sau email">
+    <button type="submit" class="btn btn-outline-primary">Caută</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Număr</th>
+          <th>Client</th>
+          <th>Plan</th>
+          <th class="text-end">Sumă</th>
+          <th>Perioadă</th>
+          <th>Emisă</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in invoices %}
+          <tr>
+            <td class="fw-semibold text-nowrap">{{ invoice.number }}</td>
+            <td><a href="{% url 'backoffice:client_detail' invoice.user_id %}">{{ invoice.user.email }}</a></td>
+            <td>{{ invoice.subscription.plan.name }} <span class="text-muted small">({{ invoice.get_billing_cycle_display|lower }})</span></td>
+            <td class="text-end text-nowrap">{{ invoice.amount }} {{ invoice.currency }}</td>
+            <td class="small text-nowrap">{{ invoice.period_start|date:"d.m.Y" }} → {{ invoice.period_end|date:"d.m.Y" }}</td>
+            <td class="small">{{ invoice.issued_at|date:"d.m.Y" }}</td>
+            <td>{% include "backoffice/_invoice_status.html" %}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'backoffice:invoice_detail' invoice.pk %}">Detalii</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4">Nicio factură găsită.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

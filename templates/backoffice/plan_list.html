@@ -1,0 +1,50 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Planuri{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Planuri</h1>
+  <a class="btn btn-primary" href="{% url 'backoffice:plan_create' %}">+ Adaugă plan</a>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nume</th>
+          <th class="text-end">Lunar</th>
+          <th class="text-end">Anual</th>
+          <th class="text-end">Monitoare</th>
+          <th class="text-end">Interval minim</th>
+          <th class="text-end">Feature-uri</th>
+          <th class="text-end">Abonamente active</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for plan in plans %}
+          <tr>
+            <td><span class="fw-semibold">{{ plan.name }}</span> <span class="text-muted small">{{ plan.code }}</span></td>
+            <td class="text-end">{{ plan.price_monthly }} {{ plan.currency }}</td>
+            <td class="text-end">{{ plan.price_yearly }} {{ plan.currency }}</td>
+            <td class="text-end">{{ plan.max_monitors }}</td>
+            <td class="text-end">{{ plan.min_check_interval_sec }}s</td>
+            <td class="text-end">{{ plan.features.all|length }}</td>
+            <td class="text-end">{{ plan.active_subscription_count }}</td>
+            <td>{% if plan.is_active %}<span class="badge text-bg-success">Activ</span>{% else %}<span class="badge text-bg-secondary">Inactiv</span>{% endif %}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'backoffice:plan_detail' plan.pk %}">Detalii</a>
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'backoffice:plan_update' plan.pk %}">Editează</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="9" class="text-center text-muted py-4">Nu există planuri.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

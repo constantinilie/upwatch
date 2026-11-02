@@ -1,0 +1,68 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}{{ page.title }}{% endblock %}
+
+{% block backoffice_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">
+    {{ page.title }}
+    {% if page.is_public %}<span class="badge text-bg-success">Publică</span>{% else %}<span class="badge text-bg-secondary">Retrasă</span>{% endif %}
+  </h1>
+  <div class="d-flex gap-2">
+    <form method="post" action="{% url 'backoffice:status_page_toggle_public' page.pk %}"
+          onsubmit="return confirm('{% if page.is_public %}Retragi{% else %}Publici{% endif %} pagina {{ page.title|escapejs }}?');">
+      {% csrf_token %}
+      {% if page.is_public %}
+        <button type="submit" class="btn btn-outline-danger">Retrage pagina</button>
+      {% else %}
+        <button type="submit" class="btn btn-outline-success">Publică pagina</button>
+      {% endif %}
+    </form>
+    <a class="btn btn-outline-secondary" href="{% url 'backoffice:status_page_list' %}">Înapoi la listă</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Detalii</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-5">Adresă</dt><dd class="col-sm-7"><code>/status/{{ page.slug }}</code></dd>
+          <dt class="col-sm-5">Domeniu propriu</dt><dd class="col-sm-7">{{ page.custom_domain|default:"—" }}</dd>
+          <dt class="col-sm-5">Branding UpWatch</dt><dd class="col-sm-7">{% if page.show_branding %}Afișat{% else %}Ascuns{% endif %}</dd>
+          <dt class="col-sm-5">Client</dt>
+          <dd class="col-sm-7"><a href="{% url 'backoffice:client_detail' page.user_id %}">{{ page.user.email }}</a></dd>
+          <dt class="col-sm-5">Descriere</dt><dd class="col-sm-7">{{ page.description|default:"—" }}</dd>
+          <dt class="col-sm-5">Actualizată</dt><dd class="col-sm-7">{{ page.updated_at|date:"d.m.Y H:i" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Monitoare afișate ({{ page.monitor_count }})</div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>#</th><th>Nume public</th><th>Monitor</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for entry in page.page_monitors.all %}
+              {% with monitor=entry.monitor %}
+                <tr>
+                  <td class="text-muted">{{ entry.sort_order }}</td>
+                  <td>{{ entry.display_name|default:monitor.name }}</td>
+                  <td><a href="{% url 'backoffice:monitor_detail' monitor.pk %}">{{ monitor.name }}</a></td>
+                  <td>{% include "backoffice/_monitor_status.html" %}</td>
+                </tr>
+              {% endwith %}
+            {% empty %}
+              <tr><td colspan="4" class="text-muted">Niciun monitor pe pagină.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

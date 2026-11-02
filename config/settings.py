@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "alerts",
     "statuspages",
     "audit",
+    "backoffice",
 ]
 
 MIDDLEWARE = [
