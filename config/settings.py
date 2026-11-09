@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 import environ
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # third-party
     "rest_framework",
+    "rest_framework_simplejwt",
     "corsheaders",
     # local
     "accounts",
@@ -146,3 +148,25 @@ MAILERS = {
 AUTH_USER_MODEL = "accounts.User"
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+
+
+# Django REST Framework
+# API-ul e pentru clienți: autentificare cu JWT (header "Authorization: Bearer <access>"),
+# iar implicit fiecare endpoint cere un client autentificat (login-ul și refresh-ul suprascriu asta).
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "api.permissions.IsClient",
+    ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "UPDATE_LAST_LOGIN": True,
+    # SIGNING_KEY implicit = SECRET_KEY din .env
+}
