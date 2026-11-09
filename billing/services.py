@@ -73,6 +73,11 @@ def subscription_list_for_user(user):
     return repository.get_subscriptions_for_user(user)
 
 
+def active_subscription_for_user(user):
+    """Abonamentul activ al clientului (cu planul), sau None."""
+    return repository.get_active_subscription_for_user(user)
+
+
 def invoice_list_for_user(user):
     return repository.get_invoices_for_user(user)
 

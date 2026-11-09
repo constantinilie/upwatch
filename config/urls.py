@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('test-db/', views.test_db, name='test_db'),
     path("backoffice/", include("backoffice.urls")),
+    path("api/v1/", include("api.urls")),
 ]
