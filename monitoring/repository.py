@@ -25,13 +25,24 @@ def get_all(status=None, search=None):
     return monitors.order_by("user__email", "name")
 
 
-def get_by_user(user):
-    return _with_details().filter(user=user).order_by("name")
+def get_by_user(user, status=None, search=None):
+    """Monitoarele unui client; opțional filtrate după status / căutare (nume, URL)."""
+    monitors = _with_details().filter(user=user)
+    if status:
+        monitors = monitors.filter(status=status)
+    if search:
+        monitors = monitors.filter(Q(name__icontains=search) | Q(url__icontains=search))
+    return monitors.order_by("name")
 
 
 def get_by_id(pk):
     """Un monitor după id, sau None dacă nu există."""
     return _with_details().filter(pk=pk).first()
+
+
+def get_by_id_for_user(pk, user):
+    """Un monitor după id, doar dacă aparține clientului; altfel None."""
+    return _with_details().filter(pk=pk, user=user).first()
 
 
 def add(data):

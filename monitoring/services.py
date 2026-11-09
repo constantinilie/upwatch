@@ -17,14 +17,21 @@ def monitor_list(status=None, search=None):
     return repository.get_all(status, (search or "").strip() or None)
 
 
-def monitor_list_for_user(user):
-    """Monitoarele unui client (pagina clientului din back office)."""
-    return repository.get_by_user(user)
+def monitor_list_for_user(user, status=None, search=None):
+    """Monitoarele unui client (pagina clientului din back office, API-ul clientului)."""
+    if status not in Monitor.Status.values:
+        status = None
+    return repository.get_by_user(user, status, (search or "").strip() or None)
 
 
 def monitor_get(pk):
     """Details / Edit: un monitor după id, sau None."""
     return repository.get_by_id(pk)
+
+
+def monitor_get_for_user(pk, user):
+    """Un monitor al clientului după id, sau None (inclusiv dacă monitorul e al altui client)."""
+    return repository.get_by_id_for_user(pk, user)
 
 
 def monitor_create(data):
