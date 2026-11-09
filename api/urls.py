@@ -5,4 +5,5 @@ app_name = "api"
 
 urlpatterns = [
     path("auth/", include("api.auth.urls")),
+    path("monitors/", include("api.monitors.urls")),
 ]
