@@ -6,6 +6,7 @@ djangorestframework==3.18.3
 djangorestframework_simplejwt==5.5.1
 psycopg==3.3.6
 psycopg-binary==3.3.6
+py-automapper==2.2.0
 PyJWT==2.15.1
 sqlparse==0.6.0
 tzdata==2026.5
