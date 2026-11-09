@@ -1,12 +1,9 @@
-from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
-
-from . import views
+"""Rutele API-ului, câte un subfolder pentru fiecare entitate (montate sub /api/v1/ în config/urls.py)."""
+from django.urls import include, path
 
 app_name = "api"
 
 urlpatterns = [
-    path("auth/token/", views.LoginAPIView.as_view(), name="token_obtain"),
-    path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("auth/me/", views.MeAPIView.as_view(), name="me"),
+    path("auth/", include("api.auth.urls")),
+    path("monitors/", include("api.monitors.urls")),
 ]

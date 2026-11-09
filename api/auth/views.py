@@ -1,12 +1,10 @@
-"""Controllerele API-ului pentru clienți. Autentificarea se face cu JWT (vezi SIMPLE_JWT în settings)."""
+"""Controllerele pentru autentificare. Tokenurile sunt JWT (vezi SIMPLE_JWT în settings)."""
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import ClientTokenObtainPairSerializer, MeSerializer
 
-
-# ---------------------------------------------------------------- Autentificare
 
 class LoginAPIView(TokenObtainPairView):
     """POST /api/v1/auth/token/  {email, password} → {access, refresh}"""
