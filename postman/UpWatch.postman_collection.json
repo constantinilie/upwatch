@@ -470,8 +470,10 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const data = pm.response.json();",
                   "pm.test(\"răspunsul e o listă\", () => pm.expect(data).to.be.an(\"array\"));",
-                  "pm.test(\"are câmpurile DTO-ului\", () => {",
-                  "    if (data.length) pm.expect(data[0]).to.include.keys(\"id\", \"name\", \"url\", \"status\", \"status_label\", \"incident_count\");",
+                  "pm.test(\"fiecare element e un MonitorSummary\", () => {",
+                  "    if (data.length) pm.expect(data[0]).to.have.all.keys(",
+                  "        \"id\", \"name\", \"url\", \"type\", \"status\", \"is_paused\", \"last_checked_at\", \"incident_count\"",
+                  "    );",
                   "});",
                   "if (data.length) pm.environment.set(\"monitor_id\", data[0].id);"
                 ]
@@ -586,7 +588,11 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"e monitorul cerut\", () => pm.expect(pm.response.json().id).to.eql(Number(pm.environment.get(\"monitor_id\"))));"
+                  "const data = pm.response.json();",
+                  "pm.test(\"e monitorul cerut\", () => pm.expect(data.id).to.eql(Number(pm.environment.get(\"monitor_id\"))));",
+                  "pm.test(\"e un MonitorSummary\", () => pm.expect(data).to.have.all.keys(",
+                  "    \"id\", \"name\", \"url\", \"type\", \"status\", \"is_paused\", \"last_checked_at\", \"incident_count\"",
+                  "));"
                 ]
               }
             }
