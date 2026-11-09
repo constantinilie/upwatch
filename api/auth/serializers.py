@@ -1,11 +1,9 @@
-"""Serializerele API-ului (conversia obiecte ↔ JSON pentru request-uri și răspunsuri)."""
+"""Serializerele pentru autentificare (login JWT și clientul curent)."""
 from rest_framework import exceptions, serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from billing import services as billing_services
 
-
-# ---------------------------------------------------------------- Autentificare
 
 class ClientTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Login cu email + parolă → {access, refresh}; conturile de staff nu primesc token."""
