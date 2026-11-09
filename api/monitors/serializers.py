@@ -4,17 +4,23 @@ from rest_framework import serializers
 from monitoring.models import Monitor
 
 
-class MonitorSummarySerializer(serializers.Serializer):
-    """Transformă un MonitorSummary în JSON (răspunsul pentru Get și Get(id))."""
+class MonitorSummarySerializer(serializers.ModelSerializer):
+    """Modelul returnat de Get și Get(id): rezumatul unui monitor, mapat automat din Monitor.
 
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-    url = serializers.URLField()
-    type = serializers.CharField()
-    status = serializers.CharField()
-    is_paused = serializers.BooleanField()
-    last_checked_at = serializers.DateTimeField(allow_null=True)
-    incident_count = serializers.IntegerField()
+    ModelSerializer generează singur câmpurile cu același nume ca în model (id, name, url, status,
+    last_checked_at); aici se declară doar cele care diferă de tabelă.
+    """
+
+    type = serializers.CharField(source="monitor_type")
+    is_paused = serializers.SerializerMethodField()
+    incident_count = serializers.IntegerField(read_only=True)  # adnotare din repository
+
+    class Meta:
+        model = Monitor
+        fields = ["id", "name", "url", "type", "status", "is_paused", "last_checked_at", "incident_count"]
+
+    def get_is_paused(self, monitor):
+        return not monitor.is_active
 
 
 class MonitorSerializer(serializers.ModelSerializer):
