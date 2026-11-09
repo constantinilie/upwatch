@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "statuspages",
     "audit",
     "backoffice",
+    "api",
 ]
 
 MIDDLEWARE = [
