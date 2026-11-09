@@ -4,6 +4,19 @@ from rest_framework import serializers
 from monitoring.models import Monitor
 
 
+class MonitorSummarySerializer(serializers.Serializer):
+    """Transformă un MonitorSummary în JSON (răspunsul pentru Get și Get(id))."""
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    url = serializers.URLField()
+    type = serializers.CharField()
+    status = serializers.CharField()
+    is_paused = serializers.BooleanField()
+    last_checked_at = serializers.DateTimeField(allow_null=True)
+    incident_count = serializers.IntegerField()
+
+
 class MonitorSerializer(serializers.ModelSerializer):
     """Un singur serializer pentru intrare și ieșire.
 
