@@ -1,0 +1,65 @@
+.shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.inner {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.topbar .inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+main.inner {
+  padding-top: var(--space-8);
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link:hover,
+.active {
+  color: var(--color-primary);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.email {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .email {
+    display: none;
+  }
+}
