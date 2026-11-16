@@ -9,6 +9,8 @@ class ClientTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Login cu email + parolă → {access, refresh}; conturile de staff nu primesc token."""
 
     def validate(self, attrs):
+        # Emails are stored lowercase (see RegisterSerializer), so Ana@x.ro must log in as ana@x.ro.
+        attrs[self.username_field] = attrs[self.username_field].strip().lower()
         data = super().validate(attrs)  # verifică emailul, parola și contul activ; setează self.user
         if self.user.is_staff:
             raise exceptions.AuthenticationFailed(
