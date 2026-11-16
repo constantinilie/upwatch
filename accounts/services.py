@@ -1,5 +1,9 @@
 """Logica de business pentru User. Accesul la date se face prin repository.py."""
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.db import transaction
+
+from billing import services as billing_services
+from billing.models import BillingCycle
 
 from . import repository
 
@@ -35,3 +39,22 @@ def all_client_list():
 
 def active_client_list():
     return repository.get_active_clients()
+
+
+@transaction.atomic
+def client_register(email, password, first_name="", last_name=""):
+    """Self-service sign-up: creates the client and puts them on the Free plan.
+
+    Rules: the email must not be taken (case-insensitive); the account and the subscription
+    are created in one transaction, so a failure never leaves a client without a plan.
+    """
+    if repository.email_exists(email):
+        raise ValidationError({"email": "Există deja un cont cu acest email."})
+
+    plan = billing_services.default_plan()
+    if plan is None:
+        raise ImproperlyConfigured("The default plan is missing or inactive; clients cannot register.")
+
+    user = repository.add_client(email, password, first_name=first_name, last_name=last_name)
+    billing_services.subscription_create(user, plan, BillingCycle.MONTHLY)
+    return user
