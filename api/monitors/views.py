@@ -2,14 +2,29 @@
 
 Clientul vede doar monitoarele lui; datele vin prin monitoring/services.py → repository.py,
 iar MonitorSummarySerializer mapează modelul bazei de date (Monitor) în răspunsul API-ului.
+La Post / Put, MonitorSerializer validează body-ul și formează răspunsul.
 """
-from rest_framework import status
+from django.core.exceptions import ValidationError
+from django.urls import reverse
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from monitoring import services as monitoring_services
 
-from .serializers import MonitorSummarySerializer
+from .serializers import MonitorSerializer, MonitorSummarySerializer
+
+
+def _not_found(pk):
+    return Response({"detail": f"Monitorul cu id {pk} nu există."}, status=status.HTTP_404_NOT_FOUND)
+
+
+def _save(save, *args):
+    """Rulează create / update din services; o regulă de business încălcată devine 400 cu erorile pe câmpuri."""
+    try:
+        return save(*args)
+    except ValidationError as error:
+        raise serializers.ValidationError(serializers.as_serializer_error(error))
 
 
 class MonitorListAPIView(APIView):
@@ -22,6 +37,15 @@ class MonitorListAPIView(APIView):
         )
         return Response(MonitorSummarySerializer(monitors, many=True).data)
 
+    def post(self, request):
+        """Post: adaugă un monitor pentru client → 201 cu monitorul creat, sau 400 cu erorile."""
+        serializer = MonitorSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        monitor = _save(monitoring_services.monitor_create_for_user, request.user, serializer.validated_data)
+        monitor = monitoring_services.monitor_get_for_user(monitor.pk, request.user)  # recitit, cu incident_count
+        location = reverse("api:monitor_detail", args=[monitor.pk])
+        return Response(MonitorSerializer(monitor).data, status=status.HTTP_201_CREATED, headers={"Location": location})
+
 
 class MonitorDetailAPIView(APIView):
     """/api/v1/monitors/<id>/"""
@@ -30,5 +54,15 @@ class MonitorDetailAPIView(APIView):
         """Get(int id): un monitor al clientului. 404 și dacă monitorul există, dar e al altui client."""
         monitor = monitoring_services.monitor_get_for_user(pk, request.user)
         if monitor is None:
-            return Response({"detail": f"Monitorul cu id {pk} nu există."}, status=status.HTTP_404_NOT_FOUND)
+            return _not_found(pk)
         return Response(MonitorSummarySerializer(monitor).data)
+
+    def put(self, request, pk):
+        """Put: actualizează un monitor al clientului → 200 cu monitorul actualizat, 400 sau 404."""
+        monitor = monitoring_services.monitor_get_for_user(pk, request.user)
+        if monitor is None:
+            return _not_found(pk)
+        serializer = MonitorSerializer(monitor, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        monitor = _save(monitoring_services.monitor_update_for_user, monitor, serializer.validated_data)
+        return Response(MonitorSerializer(monitor).data)
