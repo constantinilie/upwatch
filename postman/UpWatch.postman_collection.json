@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "2fb47993-8d4d-4545-b601-48107594908e",
     "name": "UpWatch API",
-    "description": "API-ul UpWatch pentru clienți (JWT).\n\n1. Importă și environment-ul **UpWatch Local** și selectează-l.\n2. Rulează **Auth / Login (client)** – salvează `access` și `refresh`.\n3. Celelalte request-uri folosesc automat `Bearer {{access}}`; când access token-ul expiră, scriptul colecției îl reîmprospătează cu `refresh`.",
+    "description": "API-ul UpWatch pentru clienți (JWT).\n\n1. Importă și environment-ul **UpWatch Local** și selectează-l.\n2. Rulează **Auth / Login (client)** – salvează `access` și `refresh`.\n3. Celelalte request-uri folosesc automat `Bearer {{access}}`; când access token-ul expiră, scriptul colecției îl reîmprospătează cu `refresh`.\n4. **Auth / Register (client nou)** creează un cont nou la fiecare rulare (limită: 10 înregistrări pe oră de pe același IP; repornirea serverului resetează limita).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -23,7 +23,8 @@
         "exec": [
           "const access = pm.environment.get(\"access\");",
           "const refresh = pm.environment.get(\"refresh\");",
-          "const isTokenRequest = pm.request.url.toString().includes(\"/auth/token\");",
+          "const url = pm.request.url.toString();",
+          "const isTokenRequest = url.includes(\"/auth/token\") || url.includes(\"/auth/register\");",
           "",
           "function expiresSoon(token) {",
           "    try {",
@@ -116,6 +117,64 @@
           ]
         },
         {
+          "name": "Login – email cu majuscule și spații",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/token/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "token",
+                ""
+              ]
+            },
+            "description": "Emailul se compară fără să conteze literele mari și spațiile de la margini.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"  {{client_email_mixed_case}} \",\n  \"password\": \"{{client_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"client_email_mixed_case\", pm.environment.get(\"client_email\").toUpperCase());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Refresh access token",
           "request": {
             "method": "POST",
@@ -202,12 +261,286 @@
               }
             }
           ]
+        },
+        {
+          "name": "Register (client nou)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "description": "Creează un cont de client și îl loghează direct. Emailul se generează automat (`registered_email`); tokenul se salvează în `registered_access`, nu în `access`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registered_email}}\",\n  \"password\": \"Monitorizare#2026\",\n  \"first_name\": \"Client\",\n  \"last_name\": \"Nou\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// A new email on every run, since each successful run creates a real account.",
+                  "pm.environment.set(\"registered_email\", `client+${Date.now()}@upwatch.test`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.test(\"primește access și refresh\", () => {",
+                  "    pm.expect(data).to.have.property(\"access\");",
+                  "    pm.expect(data).to.have.property(\"refresh\");",
+                  "});",
+                  "// Kept apart from {{access}}, so the other requests still run as the main client.",
+                  "if (data.access) pm.environment.set(\"registered_access\", data.access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me – client nou",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me",
+                ""
+              ]
+            },
+            "description": "Clientul creat de Register, cu planul Free atribuit automat.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{registered_access}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test(\"e clientul înregistrat\", () => pm.expect(data.email).to.eql(pm.environment.get(\"registered_email\")));",
+                  "pm.test(\"pornește pe planul Free\", () => pm.expect(data.plan.code).to.eql(\"free\"));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "Auth – cazuri de eroare",
       "item": [
+        {
+          "name": "Register – email existent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "description": "Emailul unui client existent, scris cu majuscule: tot e respins.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{client_email_upper}}\",\n  \"password\": \"Monitorizare#2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"client_email_upper\", pm.environment.get(\"client_email\").toUpperCase());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"eroare pe email\", () => pm.expect(pm.response.json()).to.have.property(\"email\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register – parolă slabă",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"parola-slaba@upwatch.test\",\n  \"password\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"eroare pe parolă\", () => pm.expect(pm.response.json()).to.have.property(\"password\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register – date invalide",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nu-e-email\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "const data = pm.response.json();",
+                  "pm.test(\"erori pe email și parolă\", () => {",
+                  "    pm.expect(data).to.have.property(\"email\");",
+                  "    pm.expect(data).to.have.property(\"password\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "Login – parolă greșită",
           "request": {
