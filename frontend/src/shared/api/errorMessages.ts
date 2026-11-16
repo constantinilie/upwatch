@@ -1,10 +1,14 @@
 import { ApiError, type FieldErrors } from './ApiError'
 
 const UNEXPECTED_ERROR_MESSAGE = 'A apărut o eroare neașteptată. Încearcă din nou.'
+const TOO_MANY_REQUESTS_MESSAGE = 'Prea multe încercări. Așteaptă puțin și încearcă din nou.'
 
 /** A message that is safe to show to the user for any thrown value. */
 export function getErrorMessage(error: unknown): string {
-  return error instanceof ApiError ? error.message : UNEXPECTED_ERROR_MESSAGE
+  if (!(error instanceof ApiError)) return UNEXPECTED_ERROR_MESSAGE
+  // DRF's throttling message is half English and technical, so it is replaced.
+  if (error.status === 429) return TOO_MANY_REQUESTS_MESSAGE
+  return error.message
 }
 
 export interface FormErrors {
@@ -34,6 +38,6 @@ export function toFormErrors(error: unknown, formFields?: readonly string[]): Fo
   const hasFieldErrors = Object.keys(fieldErrors).length > 0
   return {
     fieldErrors,
-    formError: otherMessages[0] ?? (hasFieldErrors ? undefined : error.message),
+    formError: otherMessages[0] ?? (hasFieldErrors ? undefined : getErrorMessage(error)),
   }
 }
