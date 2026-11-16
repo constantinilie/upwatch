@@ -1,0 +1,25 @@
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: var(--space-4);
+}
+
+.content {
+  width: min(440px, 100%);
+}
+
+.title {
+  font-size: 24px;
+}
+
+.subtitle {
+  margin: var(--space-1) 0 var(--space-6);
+  color: var(--color-text-muted);
+}
+
+.footer {
+  margin-top: var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+}
