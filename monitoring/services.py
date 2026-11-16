@@ -1,8 +1,10 @@
 """Logica de business pentru monitoring. Accesul la date se face prin repository.py.
 
-Aici intră regulile aplicației (ex. pauza unui monitor, mai târziu limita de monitoare din plan).
+Aici intră regulile aplicației (ex. pauza unui monitor, limitele de monitoare din planul clientului).
 """
 from django.core.exceptions import ValidationError
+
+from billing import services as billing_services
 
 from . import repository
 from .models import Incident, Monitor
@@ -41,6 +43,41 @@ def monitor_create(data):
 
 def monitor_update(monitor, data):
     """Edit: `data` = form.cleaned_data."""
+    return repository.update(monitor, data)
+
+
+def _active_plan(user):
+    """Planul abonamentului activ al clientului; fără abonament activ nu poate crea / modifica monitoare."""
+    subscription = billing_services.active_subscription_for_user(user)
+    if subscription is None:
+        raise ValidationError("Nu ai un abonament activ. Alege un plan ca să poți adăuga monitoare.")
+    return subscription.plan
+
+
+def _check_interval(plan, interval_sec):
+    minimum = plan.min_check_interval_sec
+    if interval_sec < minimum:
+        raise ValidationError({"interval_sec": f"Planul {plan.name} permite un interval de minim {minimum} de secunde."})
+
+
+def monitor_create_for_user(user, data):
+    """Create din API-ul clientului: proprietarul e clientul, iar limitele vin din planul lui.
+
+    Reguli: abonament activ, cel mult plan.max_monitors monitoare, interval >= plan.min_check_interval_sec.
+    """
+    plan = _active_plan(user)
+    if repository.count_by_user(user) >= plan.max_monitors:
+        raise ValidationError(
+            f"Ai atins limita de {plan.max_monitors} monitoare a planului {plan.name}. Alege un plan superior."
+        )
+    _check_interval(plan, data.get("interval_sec", Monitor._meta.get_field("interval_sec").default))
+    return repository.add({**data, "user": user})
+
+
+def monitor_update_for_user(monitor, data):
+    """Update din API-ul clientului: aceleași reguli de interval ca la creare."""
+    plan = _active_plan(monitor.user)
+    _check_interval(plan, data.get("interval_sec", monitor.interval_sec))
     return repository.update(monitor, data)
 
 
