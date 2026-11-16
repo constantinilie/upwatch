@@ -695,6 +695,337 @@
               }
             }
           ]
+        },
+        {
+          "name": "Post – adaugă monitor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitors",
+                ""
+              ]
+            },
+            "description": "Creează un monitor pentru clientul logat (proprietarul vine din token). Salvează id-ul în `created_monitor_id`. Atenție: fiecare rulare adaugă un monitor nou în DB.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monitor Postman {{$timestamp}}\",\n  \"url\": \"https://example.com\",\n  \"monitor_type\": \"http\",\n  \"http_method\": \"GET\",\n  \"interval_sec\": 300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.test(\"are header Location\", () => pm.response.to.have.header(\"Location\"));",
+                  "pm.test(\"monitorul nou e în așteptare\", () => pm.expect(data.status).to.eql(\"pending\"));",
+                  "if (data.id) pm.environment.set(\"created_monitor_id\", data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Post – date invalide",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitors",
+                ""
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"url\": \"nu-e-url\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"erori pe câmpuri\", () => pm.expect(pm.response.json()).to.include.keys(\"name\", \"url\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Post – keyword lipsă",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitors",
+                ""
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fără keyword\",\n  \"url\": \"https://example.com\",\n  \"monitor_type\": \"keyword\",\n  \"interval_sec\": 300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"eroare pe keyword\", () => pm.expect(pm.response.json()).to.have.property(\"keyword\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Post – interval sub limita planului",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitors",
+                ""
+              ]
+            },
+            "description": "Planul Pro al Anei permite minim 60 de secunde.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Prea des\",\n  \"url\": \"https://example.com\",\n  \"interval_sec\": 30,\n  \"timeout_sec\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"eroare pe interval_sec\", () => pm.expect(pm.response.json()).to.have.property(\"interval_sec\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Put – actualizează monitor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitors/{{created_monitor_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitors",
+                "{{created_monitor_id}}",
+                ""
+              ]
+            },
+            "description": "Rulează întâi „Post – adaugă monitor” ca să se completeze `created_monitor_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monitor Postman actualizat\",\n  \"url\": \"https://example.org\",\n  \"monitor_type\": \"keyword\",\n  \"keyword\": \"Example\",\n  \"http_method\": \"GET\",\n  \"interval_sec\": 600\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test(\"valorile au fost salvate\", () => {",
+                  "    pm.expect(data.name).to.eql(\"Monitor Postman actualizat\");",
+                  "    pm.expect(data.interval_sec).to.eql(600);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Put – interval sub limita planului",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitors/{{created_monitor_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitors",
+                "{{created_monitor_id}}",
+                ""
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Prea des\",\n  \"url\": \"https://example.org\",\n  \"interval_sec\": 30,\n  \"timeout_sec\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"eroare pe interval_sec\", () => pm.expect(pm.response.json()).to.have.property(\"interval_sec\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Put – monitorul altui client",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitors/{{other_monitor_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitors",
+                "{{other_monitor_id}}",
+                ""
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nu e al meu\",\n  \"url\": \"https://example.com\",\n  \"interval_sec\": 300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
