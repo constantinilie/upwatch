@@ -75,6 +75,10 @@ def update_feature(feature, data):
     return feature
 
 
+def get_active_plan_by_code(code):
+    return Plan.objects.filter(code=code, is_active=True).first()
+
+
 def get_active_plans():
     return Plan.objects.filter(is_active=True).order_by("sort_order", "name")
 

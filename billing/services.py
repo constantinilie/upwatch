@@ -9,6 +9,7 @@ from django.utils import timezone
 from . import repository
 from .models import BillingCycle, Invoice, Subscription
 
+DEFAULT_PLAN_CODE = "free"
 PERIOD_LENGTH = {BillingCycle.MONTHLY: timedelta(days=30), BillingCycle.YEARLY: timedelta(days=365)}
 
 
@@ -57,6 +58,11 @@ def feature_update(feature, data):
 
 def active_plan_list():
     return repository.get_active_plans()
+
+
+def default_plan():
+    """The plan every new client starts on (Free). None if it was deleted or deactivated."""
+    return repository.get_active_plan_by_code(DEFAULT_PLAN_CODE)
 
 
 # ---------------------------------------------------------------- Subscription
