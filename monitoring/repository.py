@@ -62,6 +62,10 @@ def count_all():
     return Monitor.objects.count()
 
 
+def count_by_user(user):
+    return Monitor.objects.filter(user=user).count()
+
+
 def count_by_status(status):
     return Monitor.objects.filter(status=status).count()
 
