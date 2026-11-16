@@ -53,3 +53,13 @@ def get_all_clients():
 def get_active_clients():
     """Clienții activi (non-staff), pentru liste de selecție."""
     return User.objects.filter(is_staff=False, is_active=True).order_by("email")
+
+
+def email_exists(email):
+    """Case-insensitive check, so ana@x.ro and Ana@x.ro cannot both be registered."""
+    return User.objects.filter(email__iexact=email).exists()
+
+
+def add_client(email, password, **fields):
+    """Creates a client account (non-staff); create_user hashes the password."""
+    return User.objects.create_user(email=email, password=password, **fields)
