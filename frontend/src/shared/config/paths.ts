@@ -1,6 +1,7 @@
 /** Every client-side URL in one place, so links and redirects cannot drift from the router. */
 export const paths = {
   login: '/login',
+  register: '/register',
   monitors: '/monitors',
   newMonitor: '/monitors/new',
   monitor: (id: number) => `/monitors/${id}`,
