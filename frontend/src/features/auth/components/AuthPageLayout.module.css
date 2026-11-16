@@ -5,8 +5,8 @@
   padding: var(--space-4);
 }
 
-.page > * {
-  width: min(400px, 100%);
+.content {
+  width: min(440px, 100%);
 }
 
 .title {
@@ -15,5 +15,11 @@
 
 .subtitle {
   margin: var(--space-1) 0 var(--space-6);
+  color: var(--color-text-muted);
+}
+
+.footer {
+  margin-top: var(--space-4);
+  text-align: center;
   color: var(--color-text-muted);
 }

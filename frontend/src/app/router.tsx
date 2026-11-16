@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router'
-import { LoginPage, RequireAuth } from '@/features/auth'
+import { LoginPage, RegisterPage, RequireAuth } from '@/features/auth'
 import { MonitorCreatePage, MonitorDetailPage, MonitorListPage } from '@/features/monitors'
 import { paths, routePatterns } from '@/shared/config/paths'
 import { AppLayout } from './AppLayout'
@@ -8,6 +8,7 @@ import { RouteErrorPage } from './RouteErrorPage'
 
 export const router = createBrowserRouter([
   { path: paths.login, element: <LoginPage />, errorElement: <RouteErrorPage /> },
+  { path: paths.register, element: <RegisterPage />, errorElement: <RouteErrorPage /> },
   {
     // Everything below needs a logged-in client.
     element: <RequireAuth />,
