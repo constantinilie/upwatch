@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { CurrentUser, LoginCredentials } from './types'
+import type { CurrentUser, LoginCredentials, RegisterInput } from './types'
 
 export interface AuthContextValue {
   /** The logged-in client, or null when nobody is logged in. */
@@ -8,6 +8,8 @@ export interface AuthContextValue {
   isLoading: boolean
   /** Gets the tokens, then loads the client; rejects with an ApiError on wrong credentials. */
   login: (credentials: LoginCredentials) => Promise<void>
+  /** Creates the account and logs the new client in; rejects with field errors when invalid. */
+  register: (input: RegisterInput) => Promise<void>
   logout: () => void
 }
 
