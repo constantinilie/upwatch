@@ -161,6 +161,13 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "api.permissions.IsClient",
     ],
+    # Only views that set throttle_scope are limited (anonymous requests are counted per IP).
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "register": "10/hour",
+    },
 }
 
 SIMPLE_JWT = {
