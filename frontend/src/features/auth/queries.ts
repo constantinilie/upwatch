@@ -11,3 +11,9 @@ export function useLogin() {
   const { login } = useAuth()
   return useMutation({ mutationFn: login })
 }
+
+/** Creates an account through AuthProvider; on success the new client is already logged in. */
+export function useRegister() {
+  const { register } = useAuth()
+  return useMutation({ mutationFn: register })
+}

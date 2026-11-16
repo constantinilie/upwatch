@@ -3,6 +3,14 @@ export interface LoginCredentials {
   password: string
 }
 
+/** Body of POST /auth/register/; the names are optional (empty strings are allowed). */
+export interface RegisterInput {
+  email: string
+  password: string
+  first_name: string
+  last_name: string
+}
+
 /** The plan of the active subscription, as returned by GET /auth/me/. */
 export interface CurrentPlan {
   code: string
