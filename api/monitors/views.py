@@ -66,3 +66,14 @@ class MonitorDetailAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         monitor = _save(monitoring_services.monitor_update_for_user, monitor, serializer.validated_data)
         return Response(MonitorSerializer(monitor).data)
+
+    def delete(self, request, pk):
+        """Delete: soft delete of a client's monitor → 204 without body, or 404.
+
+        The row stays in the database (is_deleted=True) together with its incidents and checks;
+        afterwards Get / Get(id) / Put no longer find it and answer 404."""
+        monitor = monitoring_services.monitor_get_for_user(pk, request.user)
+        if monitor is None:
+            return _not_found(pk)
+        _save(monitoring_services.monitor_delete, monitor)
+        return Response(status=status.HTTP_204_NO_CONTENT)
