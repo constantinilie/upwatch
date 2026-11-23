@@ -398,6 +398,23 @@ def status_page_toggle_public(request, pk):
     return redirect("backoffice:status_page_detail", pk=page.pk)
 
 
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def status_page_delete(request, pk):
+    """Delete (hard): GET shows the confirmation page, POST removes the row from the database."""
+    page = _or_404(status_page_services.status_page_get(pk), "Pagina de status nu există.")
+    if request.method == "POST":
+        title = page.title  # read before delete; the instance loses its pk afterwards
+        try:
+            status_page_services.status_page_delete(page)
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect("backoffice:status_page_detail", pk=pk)
+        messages.success(request, f"Pagina „{title}” a fost ștearsă definitiv.")
+        return redirect("backoffice:status_page_list")
+    return render(request, "backoffice/status_page_confirm_delete.html", {"page": page})
+
+
 # ---------------------------------------------------------------- Audit (doar citire)
 
 @staff_member_required

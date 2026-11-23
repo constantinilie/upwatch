@@ -1,0 +1,33 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Șterge {{ page.title }}{% endblock %}
+
+{% block backoffice_content %}
+<h1 class="h3 mb-3">Ștergi pagina de status?</h1>
+
+<div class="card border-danger" style="max-width: 700px">
+  <div class="card-body">
+    <p>
+      Pagina <strong>{{ page.title }}</strong> (<code>/status/{{ page.slug }}</code>)
+      a clientului {{ page.user.email }} va fi <strong>ștearsă definitiv</strong> din baza de date.
+    </p>
+    <ul>
+      <li>Se șterg și cele {{ page.monitor_count }} legături către monitoare.</li>
+      <li>Monitoarele, incidentele și verificările lor <strong>rămân neatinse</strong>.</li>
+      <li>Operația nu poate fi anulată.</li>
+    </ul>
+
+    {% if page.is_public %}
+      <div class="alert alert-warning mb-3">
+        Pagina este publică. Retrage-o mai întâi, apoi o poți șterge.
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" {% if page.is_public %}disabled{% endif %}>Da, șterge definitiv</button>
+      <a class="btn btn-outline-secondary" href="{% url 'backoffice:status_page_detail' page.pk %}">Anulează</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

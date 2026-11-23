@@ -28,3 +28,8 @@ def update(status_page, **fields):
         setattr(status_page, field, value)
     status_page.save(update_fields=[*fields, "updated_at"])
     return status_page
+
+
+def delete(status_page):
+    """Hard delete: removes the row; its StatusPageMonitor links go with it (CASCADE)."""
+    status_page.delete()
