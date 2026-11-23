@@ -51,6 +51,8 @@ export const api = {
     request<T>(path, { ...options, method: 'POST', body }),
   put: <T>(path: string, body: unknown, options?: CallOptions) =>
     request<T>(path, { ...options, method: 'PUT', body }),
+  delete: <T = void>(path: string, options?: CallOptions) =>
+    request<T>(path, { ...options, method: 'DELETE' }),
 }
 
 async function send(

@@ -35,3 +35,14 @@
 .secondary:hover:not(:disabled) {
   background: var(--color-neutral-bg);
 }
+
+/* Destructive actions (e.g. delete): readable in both themes via the danger tokens. */
+.danger {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.danger:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
