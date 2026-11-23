@@ -39,6 +39,9 @@ class Monitor(models.Model):
     last_status_change_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Soft delete: the row stays so incidents / check results / alert events keep their history.
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     alert_channels = models.ManyToManyField(
         "alerts.AlertChannel", through="alerts.MonitorAlertChannel", related_name="monitors", blank=True
