@@ -32,6 +32,7 @@ urlpatterns = [
     path("monitors/<int:pk>/", views.monitor_detail, name="monitor_detail"),
     path("monitors/<int:pk>/edit/", views.monitor_update, name="monitor_update"),
     path("monitors/<int:pk>/toggle-active/", views.monitor_toggle_active, name="monitor_toggle_active"),
+    path("monitors/<int:pk>/delete/", views.monitor_delete, name="monitor_delete"),
     path("incidents/", views.incident_list, name="incident_list"),
     path("status-pages/", views.status_page_list, name="status_page_list"),
     path("status-pages/<int:pk>/", views.status_page_detail, name="status_page_detail"),

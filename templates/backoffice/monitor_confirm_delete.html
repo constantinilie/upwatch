@@ -1,0 +1,27 @@
+{% extends "backoffice/base.html" %}
+
+{% block title %}Șterge {{ monitor.name }}{% endblock %}
+
+{% block backoffice_content %}
+<h1 class="h3 mb-3">Ștergi monitorul?</h1>
+
+<div class="card border-danger" style="max-width: 700px">
+  <div class="card-body">
+    <p>
+      Monitorul <strong>{{ monitor.name }}</strong> (<span class="text-break">{{ monitor.url }}</span>)
+      al clientului {{ monitor.user.email }} va fi șters.
+    </p>
+    <ul>
+      <li>Nu mai apare în liste, pe paginile de status și nu mai este verificat.</li>
+      <li>Istoricul lui se păstrează: {{ monitor.incident_count }} incident{{ monitor.incident_count|pluralize:"e" }}, verificările și alertele trimise.</li>
+      <li>Nu mai contează la limita de monitoare din planul clientului.</li>
+    </ul>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Da, șterge monitorul</button>
+      <a class="btn btn-outline-secondary" href="{% url 'backoffice:monitor_detail' monitor.pk %}">Anulează</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
