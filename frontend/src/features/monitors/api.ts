@@ -18,3 +18,8 @@ export function fetchMonitor(id: number, signal?: AbortSignal) {
 export function createMonitor(input: MonitorInput) {
   return api.post<Monitor>('/monitors/', input)
 }
+
+/** Deletes a monitor (soft delete on the server: its incident history is kept); 204 without body. */
+export function deleteMonitor(id: number) {
+  return api.delete(`/monitors/${id}/`)
+}

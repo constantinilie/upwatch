@@ -1,7 +1,8 @@
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { ApiError } from '@/shared/api/ApiError'
 import { getErrorMessage } from '@/shared/api/errorMessages'
 import { Alert } from '@/shared/components/Alert'
+import { Button } from '@/shared/components/Button'
 import { Card } from '@/shared/components/Card'
 import { LinkButton } from '@/shared/components/LinkButton'
 import { PageHeader } from '@/shared/components/PageHeader'
@@ -10,7 +11,7 @@ import { paths } from '@/shared/config/paths'
 import { formatDateTime } from '@/shared/lib/formatDate'
 import { MonitorStatusBadge } from '../components/MonitorStatusBadge'
 import { MONITOR_TYPE_LABELS } from '../constants'
-import { useMonitor } from '../queries'
+import { useDeleteMonitor, useMonitor } from '../queries'
 import styles from './MonitorDetailPage.module.css'
 
 const NOT_FOUND_MESSAGE = 'Monitorul nu există sau nu îți aparține.'
@@ -24,7 +25,17 @@ export function MonitorDetailPage() {
 }
 
 function MonitorDetails({ id }: { id: number }) {
+  const navigate = useNavigate()
   const { data: monitor, isPending, isError, error } = useMonitor(id)
+  const deleteMonitor = useDeleteMonitor()
+
+  function handleDelete(name: string) {
+    const isConfirmed = window.confirm(
+      `Ștergi monitorul „${name}”? Nu va mai fi verificat, dar istoricul incidentelor se păstrează.`,
+    )
+    if (!isConfirmed) return
+    deleteMonitor.mutate(id, { onSuccess: () => navigate(paths.monitors) })
+  }
 
   if (isPending) return <Spinner />
   if (isError) {
@@ -38,11 +49,21 @@ function MonitorDetails({ id }: { id: number }) {
         title={monitor.name}
         description={monitor.url}
         actions={
-          <LinkButton to={paths.monitors} variant="secondary">
-            Înapoi
-          </LinkButton>
+          <>
+            <Button
+              variant="danger"
+              isLoading={deleteMonitor.isPending}
+              onClick={() => handleDelete(monitor.name)}
+            >
+              Șterge
+            </Button>
+            <LinkButton to={paths.monitors} variant="secondary">
+              Înapoi
+            </LinkButton>
+          </>
         }
       />
+      {deleteMonitor.isError && <Alert>{getErrorMessage(deleteMonitor.error)}</Alert>}
       <Card>
         <dl className={styles.details}>
           <dt>Status</dt>
