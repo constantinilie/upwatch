@@ -14,7 +14,8 @@ def _clients_with_details():
     active = Subscription.objects.filter(status=Subscription.Status.ACTIVE).select_related("plan")
     return (
         User.objects.filter(is_staff=False)
-        .annotate(monitor_count=Count("monitors", distinct=True))
+        # soft-deleted monitors are not counted
+        .annotate(monitor_count=Count("monitors", filter=Q(monitors__is_deleted=False), distinct=True))
         .prefetch_related(Prefetch("subscriptions", queryset=active, to_attr="active_subscriptions"))
     )
 
