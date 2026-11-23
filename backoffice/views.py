@@ -351,6 +351,22 @@ def monitor_toggle_active(request, pk):
     return redirect("backoffice:monitor_detail", pk=monitor.pk)
 
 
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def monitor_delete(request, pk):
+    """Delete (soft): GET shows the confirmation page, POST marks the monitor as deleted."""
+    monitor = _or_404(monitoring_services.monitor_get(pk), "Monitorul nu există.")
+    if request.method == "POST":
+        try:
+            monitoring_services.monitor_delete(monitor)
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect("backoffice:monitor_list")
+        messages.success(request, f"Monitorul „{monitor.name}” a fost șters. Istoricul lui de incidente a fost păstrat.")
+        return redirect("backoffice:monitor_list")
+    return render(request, "backoffice/monitor_confirm_delete.html", {"monitor": monitor})
+
+
 # ---------------------------------------------------------------- Incidente (doar citire)
 
 @staff_member_required

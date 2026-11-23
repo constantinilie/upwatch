@@ -15,6 +15,7 @@
       {% endif %}
     </form>
     <a class="btn btn-primary" href="{% url 'backoffice:monitor_update' monitor.pk %}">Editează</a>
+    <a class="btn btn-danger" href="{% url 'backoffice:monitor_delete' monitor.pk %}">Șterge</a>
     <a class="btn btn-outline-secondary" href="{% url 'backoffice:monitor_list' %}">Înapoi la listă</a>
   </div>
 </div>
