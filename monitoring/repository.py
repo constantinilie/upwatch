@@ -3,6 +3,7 @@
 Singurul loc care face query-uri pe Monitor și Incident prin ORM. Fără reguli de business.
 """
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from .models import Incident, Monitor
 
@@ -55,6 +56,17 @@ def update(monitor, data):
     for field, value in data.items():
         setattr(monitor, field, value)
     monitor.save()
+    return monitor
+
+
+def soft_delete(monitor):
+    """Soft delete: only marks the row; incidents, check results and alert events stay in the database.
+    It is also stopped (is_active=False, paused) so the scheduler no longer checks it."""
+    monitor.is_deleted = True
+    monitor.deleted_at = timezone.now()
+    monitor.is_active = False
+    monitor.status = Monitor.Status.PAUSED
+    monitor.save(update_fields=["is_deleted", "deleted_at", "is_active", "status", "updated_at"])
     return monitor
 
 

@@ -93,6 +93,14 @@ def monitor_set_active(monitor, is_active):
     return repository.update(monitor, {"is_active": is_active, "status": status})
 
 
+def monitor_delete(monitor):
+    """Soft delete. A monitor cannot be hard-deleted: incidents, check results, alert events and
+    status page entries reference it with CASCADE, so a physical delete would wipe its history."""
+    if monitor.is_deleted:
+        raise ValidationError(f"Monitorul „{monitor.name}” este deja șters.")
+    return repository.soft_delete(monitor)
+
+
 def monitor_status_counts():
     return repository.count_monitors_by_status()
 
