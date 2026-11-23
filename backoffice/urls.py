@@ -36,5 +36,6 @@ urlpatterns = [
     path("status-pages/", views.status_page_list, name="status_page_list"),
     path("status-pages/<int:pk>/", views.status_page_detail, name="status_page_detail"),
     path("status-pages/<int:pk>/toggle-public/", views.status_page_toggle_public, name="status_page_toggle_public"),
+    path("status-pages/<int:pk>/delete/", views.status_page_delete, name="status_page_delete"),
     path("audit/", views.audit_list, name="audit_list"),
 ]
