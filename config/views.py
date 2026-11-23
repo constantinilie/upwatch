@@ -14,7 +14,8 @@ def test_db(request):
 
     plans = Plan.objects.prefetch_related("features").order_by("sort_order")
     monitors = (
-        Monitor.objects.select_related("user")
+        Monitor.objects.filter(is_deleted=False)
+        .select_related("user")
         .annotate(incident_count=Count("incidents"))
         .order_by("user__email", "name")
     )

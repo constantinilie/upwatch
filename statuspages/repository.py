@@ -1,11 +1,13 @@
 """Nivelul de acces la date pentru paginile de status. Singurul loc care face query-uri pe StatusPage prin ORM."""
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 
 from .models import StatusPage, StatusPageMonitor
 
 
 def _with_details():
-    return StatusPage.objects.select_related("user").annotate(monitor_count=Count("page_monitors"))
+    # soft-deleted monitors no longer appear on status pages, so they are not counted either
+    visible = Q(page_monitors__monitor__is_deleted=False)
+    return StatusPage.objects.select_related("user").annotate(monitor_count=Count("page_monitors", filter=visible))
 
 
 def get_all():
@@ -14,7 +16,9 @@ def get_all():
 
 def get_by_id(pk):
     """O pagină, cu monitoarele ei (în ordinea de afișare) și proprietarul fiecărui monitor."""
-    entries = StatusPageMonitor.objects.select_related("monitor").order_by("sort_order")
+    entries = (
+        StatusPageMonitor.objects.filter(monitor__is_deleted=False).select_related("monitor").order_by("sort_order")
+    )
     return (
         _with_details()
         .prefetch_related(Prefetch("page_monitors", queryset=entries))

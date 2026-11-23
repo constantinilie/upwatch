@@ -33,7 +33,13 @@
       <tbody>
         {% for incident in incidents %}
           <tr>
-            <td><a href="{% url 'backoffice:monitor_detail' incident.monitor_id %}">{{ incident.monitor.name }}</a></td>
+            <td>
+              {% if incident.monitor.is_deleted %}
+                {{ incident.monitor.name }} <span class="badge text-bg-secondary">Șters</span>
+              {% else %}
+                <a href="{% url 'backoffice:monitor_detail' incident.monitor_id %}">{{ incident.monitor.name }}</a>
+              {% endif %}
+            </td>
             <td><a href="{% url 'backoffice:client_detail' incident.monitor.user_id %}">{{ incident.monitor.user.email }}</a></td>
             <td>{{ incident.cause|default:"—" }}</td>
             <td class="small text-nowrap">{{ incident.started_at|date:"d.m.Y H:i" }}</td>

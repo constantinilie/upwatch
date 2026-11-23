@@ -10,8 +10,13 @@ from .models import Incident, Monitor
 
 # ---------------------------------------------------------------- Monitor
 
+def _not_deleted():
+    """Base queryset for every Get / GetAll / Count: soft-deleted monitors are left out."""
+    return Monitor.objects.filter(is_deleted=False)
+
+
 def _with_details():
-    return Monitor.objects.select_related("user").annotate(incident_count=Count("incidents"))
+    return _not_deleted().select_related("user").annotate(incident_count=Count("incidents"))
 
 
 def get_all(status=None, search=None):
@@ -71,19 +76,19 @@ def soft_delete(monitor):
 
 
 def count_all():
-    return Monitor.objects.count()
+    return _not_deleted().count()
 
 
 def count_by_user(user):
-    return Monitor.objects.filter(user=user).count()
+    return _not_deleted().filter(user=user).count()
 
 
 def count_by_status(status):
-    return Monitor.objects.filter(status=status).count()
+    return _not_deleted().filter(status=status).count()
 
 
 def count_monitors_by_status():
-    rows = Monitor.objects.values("status").annotate(total=Count("id"))
+    rows = _not_deleted().values("status").annotate(total=Count("id"))
     return {row["status"]: row["total"] for row in rows}
 
 
